@@ -3,6 +3,7 @@ MAIZE-XNet Web Application
 MSc Thesis — Streamlit Deployment
 Cyber-Terminal UI | Green Agriculture Theme
 """
+st.cache_resource.clear()
 
 import streamlit as st
 import numpy as np
@@ -129,74 +130,58 @@ SEVERITY_COLORS = {
 # ── Mock Inference (Fixed & Realistic) ─────────────────────────────────────
 def mock_inference(image):
     """
-    FIXED VERSION - Produces realistic and mathematically consistent demo results.
-    
-    All 4 models strongly agree on the same class with high confidence.
-    The ensemble confidence is now higher than individual models (as expected).
+    CORRECTED & REALISTIC MOCK INFERENCE
+    - All models agree strongly
+    - Ensemble confidence is high and logical
     """
-    # Deterministic seed based on image so same image = same demo result
     seed = int(np.array(image).sum()) % 100000
     rng = np.random.default_rng(seed)
 
     n_classes = 4
-    pred_idx = rng.integers(0, n_classes)   # Chosen disease class
+    pred_idx = rng.integers(0, n_classes)
 
-    # ── 1. Strong base probability distribution ──
-    pred_conf = rng.uniform(0.89, 0.96)     # Strong confidence for predicted class
+    # Strong confidence for the predicted class
+    pred_conf = rng.uniform(0.91, 0.965)
     remaining = 1.0 - pred_conf
-    
-    # Other classes share the remaining probability
-    other_shares = rng.dirichlet(np.ones(n_classes - 1) * 1.5) * remaining
-    
+    other_shares = rng.dirichlet(np.ones(n_classes-1) * 1.6) * remaining
+
     base_probs = np.zeros(n_classes)
     base_probs[pred_idx] = pred_conf
-    other_idx = [i for i in range(n_classes) if i != pred_idx]
-    for i, idx in enumerate(other_idx):
+    for i, idx in enumerate([j for j in range(n_classes) if j != pred_idx]):
         base_probs[idx] = other_shares[i]
 
-    # ── 2. Generate individual model probabilities ──
+    # Individual model probabilities with small variation
     individual_probs = np.zeros((4, n_classes))
     for m in range(4):
-        # Small perturbation (multiplicative noise - more stable)
-        noise = rng.uniform(-0.015, 0.015, n_classes)
-        perturbed = base_probs * (1.0 + noise)
-        
-        # Ensure predicted class stays dominant
-        perturbed = np.clip(perturbed, 0.008, 0.99)
-        perturbed[pred_idx] = max(perturbed[pred_idx], 0.86)
-        
-        # Re-normalize
-        perturbed = perturbed / perturbed.sum()
+        noise = rng.uniform(-0.012, 0.012, n_classes)
+        perturbed = base_probs * (1 + noise)
+        perturbed = np.clip(perturbed, 0.01, 0.99)
+        perturbed[pred_idx] = max(perturbed[pred_idx], 0.88)
+        perturbed /= perturbed.sum()
         individual_probs[m] = perturbed
 
-    # ── 3. Gate weights (learned attention) ──
-    gate_weights = rng.dirichlet(np.ones(4) * 6.5)   # fairly balanced but not uniform
+    # Gate weights
+    gate_weights = rng.dirichlet(np.ones(4) * 8.0)
 
-    # ── 4. Ensemble = Gate-weighted sum (This is what the real model does) ──
-    final_probs = np.zeros(n_classes)
-    for i in range(4):
-        final_probs += individual_probs[i] * gate_weights[i]
-    
-    final_probs = final_probs / final_probs.sum()   # Final normalization
+    # === ENSEMBLE CALCULATION (This is what the real model does) ===
+    final_probs = (individual_probs * gate_weights[:, np.newaxis]).sum(axis=0)
+    final_probs /= final_probs.sum()
 
-    # ── 5. TSDS Score ──
-    tsds_score = rng.uniform(0.58, 0.87)
+    # TSDS
+    tsds_score = rng.uniform(0.65, 0.89)
 
-    # ── 6. Grad-CAM maps (consistent across models) ──
+    # Grad-CAM maps
     h, w = 224, 224
     yy, xx = np.mgrid[0:h, 0:w]
-    
-    # Shared focus area
-    cx_base = rng.integers(80, 150)
-    cy_base = rng.integers(70, 160)
+    cx_base = rng.integers(75, 155)
+    cy_base = rng.integers(65, 160)
     
     gradcam_maps = []
     for _ in range(4):
-        cx = int(np.clip(cx_base + rng.integers(-12, 13), 45, 180))
-        cy = int(np.clip(cy_base + rng.integers(-12, 13), 45, 180))
-        
-        cam = rng.random((h, w)) * 0.12
-        cam += 3.2 * np.exp(-((yy - cx)**2 + (xx - cy)**2) / (2 * 35**2))
+        cx = cx_base + rng.integers(-10, 11)
+        cy = cy_base + rng.integers(-10, 11)
+        cam = rng.random((h, w)) * 0.10
+        cam += 3.0 * np.exp(-((yy - cx)**2 + (xx - cy)**2) / (2 * 32**2))
         cam = (cam - cam.min()) / (cam.max() - cam.min() + 1e-8)
         gradcam_maps.append(cam)
 
