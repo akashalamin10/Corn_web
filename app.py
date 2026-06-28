@@ -3,7 +3,7 @@ MAIZE-XNet Web Application
 MSc Thesis — Streamlit Deployment
 Cyber-Terminal UI | Green Agriculture Theme
 """
-st.cache_resource.clear()
+
 
 import streamlit as st
 import numpy as np
@@ -13,6 +13,8 @@ import base64
 import datetime
 import textwrap
 from utils.model_inference import load_all_models, run_inference, compute_gradcam, compute_tsds
+
+st.cache_resource.clear()
 
 st.set_page_config(
     page_title="MAIZE-XNet | Corn Disease Classifier",
