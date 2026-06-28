@@ -31,30 +31,30 @@ def build_pdf(image, pred_class, final_probs, individual_probs,
     except ImportError:
         raise ImportError("reportlab is required: pip install reportlab")
 
-    # ── Colors ────────────────────────────────────────────────────────────────
-    GREEN_DARK   = HexColor("#0d2b14")
-    GREEN_MID    = HexColor("#1a5c28")
-    GREEN_LIGHT  = HexColor("#39ff88")
-    GREEN_BG     = HexColor("#060e07")
-    CORN_YELLOW  = HexColor("#ffe033")
-    CYAN         = HexColor("#00ffcc")
-    RED          = HexColor("#ff3b5c")
-    AMBER        = HexColor("#ffb627")
-    MAG          = HexColor("#ff3df0")
-    GRAY_DARK    = HexColor("#1a2a1e")
-    GRAY_MID     = HexColor("#3a7a5a")
-    GRAY_LIGHT   = HexColor("#b8ffd4")
-    GRAY_BG      = HexColor("#0a1410")
-    BORDER       = HexColor("#163a20")
+    # ── Colors — WHITE BACKGROUND PDF ────────────────────────────────────────
+    GREEN_DARK   = HexColor("#005c2a")
+    GREEN_MID    = HexColor("#00843f")
+    GREEN_LIGHT  = HexColor("#00a84f")
+    GREEN_BG     = HexColor("#ffffff")   # ← was dark, now white
+    CORN_YELLOW  = HexColor("#aa8800")
+    CYAN         = HexColor("#007a8a")
+    RED          = HexColor("#cc1133")
+    AMBER        = HexColor("#cc7700")
+    MAG          = HexColor("#880099")
+    GRAY_DARK    = HexColor("#0a1f10")
+    GRAY_MID     = HexColor("#3a6b4a")
+    GRAY_LIGHT   = HexColor("#1a3a22")
+    GRAY_BG      = HexColor("#ffffff")   # ← was dark, now white
+    BORDER       = HexColor("#b8ddc4")
     WHITE        = white
     WHITE_HEX    = HexColor("#ffffff")
 
     SEV_COLORS = {
-        "None":   HexColor("#39ff88"),
-        "Medium": HexColor("#ffb627"),
-        "High":   HexColor("#ff3b5c"),
+        "None":   HexColor("#00843f"),
+        "Medium": HexColor("#cc7700"),
+        "High":   HexColor("#cc1133"),
     }
-    MODEL_COLORS_HEX = ["#34e0ff", "#39ff88", "#ff3b5c", "#ff3df0"]
+    MODEL_COLORS_HEX = ["#007a8a", "#00843f", "#cc1133", "#880099"]
     MODEL_COLORS     = [HexColor(h) for h in MODEL_COLORS_HEX]
 
     info       = class_info[pred_class]
